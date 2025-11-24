@@ -1,0 +1,64 @@
+[
+  {
+    "context": "Workspace",
+    "use_key_equivalents": true,
+    "bindings": {
+      "cmd-h": "workspace::ActivatePaneLeft",
+      "cmd-l": "workspace::ActivatePaneRight",
+      "cmd-k": "workspace::ActivatePaneUp",
+      "cmd-j": "workspace::ActivatePaneDown",
+      "cmd-b": "workspace::ToggleLeftDock",
+      "cmd-;": "project_panel::ToggleFocus",
+      "cmd-'": "terminal_panel::ToggleFocus",
+      "cmd--": "pane::SplitRight",
+      "cmd-o": "pane::SplitDown",
+      "cmd-w": "pane::CloseActiveItem",
+      "cmd-shift-j": ["workspace::IncreaseActiveDockSize", { "px": 50 }],
+      "cmd-shift-k": ["workspace::DecreaseActiveDockSize", { "px": 50 }],
+      "cmd-i": "agent::ToggleFocus",
+      "alt-l": "agent::ToggleFocus",
+      "alt-k": "assistant::InlineAssist"
+    }
+  },
+  {
+    "context": "Terminal",
+    "use_key_equivalents": true,
+    "bindings": {
+      "cmd-h": "workspace::ActivatePaneLeft",
+      "cmd-l": "workspace::ActivatePaneRight",
+      "cmd-o": "pane::SplitDown",
+      "cmd--": "pane::SplitRight",
+      "cmd-w": "pane::CloseActiveItem",
+      "cmd-'": "terminal_panel::ToggleFocus",
+      "cmd-enter": "workspace::ToggleZoom"
+    }
+  },
+  {
+    "context": "Editor",
+    "use_key_equivalents": true,
+    "bindings": {
+      "cmd--": "pane::SplitRight",
+      "cmd-o": "pane::SplitDown",
+      "cmd-h": "workspace::ActivatePaneLeft",
+      "cmd-l": "workspace::ActivatePaneRight",
+      "cmd-k": "workspace::ActivatePaneUp",
+      "cmd-j": "workspace::ActivatePaneDown",
+      "cmd-'": "terminal_panel::ToggleFocus"
+    }
+  },
+  {
+    "context": "Editor && vim_mode == normal",
+    "use_key_equivalents": true,
+    "bindings": {
+      "cmd-u": ["editor::MovePageUp", { "center_cursor": true }],
+      "cmd-d": ["editor::MovePageDown", { "center_cursor": true }]
+    }
+  },
+  {
+    "context": "Editor && vim_mode == insert",
+    "use_key_equivalents": true,
+    "bindings": {
+      "ctrl-space": "editor::ShowCompletions"
+    }
+  }
+]
