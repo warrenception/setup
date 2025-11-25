@@ -1,0 +1,8 @@
+# Let Option key work as Alt for nvim
+macos-option-as-alt = true
+
+# Cmd+p for Telescope (sends Ctrl+p)
+keybind = cmd+p=text:\x10
+
+# Cmd+g for grep (sends Ctrl+g)
+keybind = cmd+g=text:\x07
