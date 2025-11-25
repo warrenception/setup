@@ -1,5 +1,13 @@
 # Ghostty configuration managed by the setup repo.
 # Copy to $HOME/Library/Application Support/com.mitchellh.ghostty/config on macOS.
+
+# Make Option key send Alt/Meta to terminal (required for nvim keybindings)
+macos-option-as-alt = true
+
+# Map Cmd to Ctrl for common nvim shortcuts
+keybind = "cmd+p=text:\\x10"
+keybind = "cmd+g=text:\\x07"
+
 keybind = "cmd+shift+left=goto_split:left"
 keybind = "cmd+shift+right=goto_split:right"
 keybind = "cmd+shift+up=goto_split:up"

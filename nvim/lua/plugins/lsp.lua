@@ -10,9 +10,27 @@ return {
         root_markers = { "hardhat.config.js", "hardhat.config.ts", "foundry.toml", ".git" },
       })
 
+      -- Lua LSP for nvim config editing
+      vim.lsp.config("lua_ls", {
+        cmd = { "lua-language-server" },
+        filetypes = { "lua" },
+        root_markers = { ".luarc.json", ".luarc.jsonc", "stylua.toml", ".git" },
+        settings = {
+          Lua = {
+            runtime = { version = "LuaJIT" },
+            workspace = {
+              checkThirdParty = false,
+              library = { vim.env.VIMRUNTIME },
+            },
+            telemetry = { enable = false },
+          },
+        },
+      })
+
       -- Enable servers
       vim.lsp.enable("ts_ls")
       vim.lsp.enable("solidity_ls")
+      vim.lsp.enable("lua_ls")
 
       -- Keymaps (only when LSP attaches)
       vim.api.nvim_create_autocmd("LspAttach", {

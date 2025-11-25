@@ -12,6 +12,13 @@ ln -s /path/to/setup/ghostty ~/.config/ghostty
 # Install language servers
 npm i -g typescript-language-server typescript @nomicfoundation/solidity-language-server
 
+# Install lua-language-server (for editing nvim config)
+brew install lua-language-server
+
+# Install formatters (optional)
+pnpm add -g @biomejs/biome
+brew install stylua
+
 # Open nvim - plugins auto-install
 nvim
 ```
@@ -38,7 +45,7 @@ nvim
 | `Tab` | Next buffer |
 | `Shift+Tab` | Previous buffer |
 
-### File Finding
+### File Finding (requires ghostty keybinds)
 
 | Key | Action |
 |-----|--------|
@@ -46,6 +53,7 @@ nvim
 | `Cmd+g` | Grep in repo |
 | `Space b` | Open buffers |
 | `Space r` | Recent files |
+| `Space f` | Format buffer |
 
 ### LSP (Code Intelligence)
 
@@ -99,10 +107,12 @@ nvim
 - **nvim-treesitter** — syntax highlighting
 - **nvim-lspconfig** — LSP support
 - **nvim-cmp** — completion
-- **copilot.vim** — AI suggestions
+- **copilot.lua + copilot-cmp** — AI suggestions integrated with completion
 - **gitsigns.nvim** — git hunks
 - **diffview.nvim** — git diff viewer
 - **lualine.nvim** — statusline
+- **conform.nvim** — formatting (biome, forge fmt, stylua)
+- **which-key.nvim** — keybinding hints
 
 ## Ghostty Config
 

@@ -23,10 +23,10 @@ opt.signcolumn = "no"
 opt.cursorline = true
 opt.scrolloff = 8
 
--- Diagnostics (no signs, just underline)
+-- Diagnostics (underline only, no inline text)
 vim.diagnostic.config({
   signs = false,
-  virtual_text = true,
+  virtual_text = false,
   underline = true,
 })
 
@@ -42,6 +42,10 @@ opt.timeoutlen = 300
 
 -- Disable swap (undo file is enough)
 opt.swapfile = false
+
+-- Use ripgrep for :grep (respects .gitignore)
+opt.grepprg = "rg --vimgrep --smart-case"
+opt.grepformat = "%f:%l:%c:%m"
 
 -- Autosave when leaving buffer or losing focus
 vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost" }, {
