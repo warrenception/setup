@@ -4,7 +4,9 @@ export PATH=$HOME/bin:/usr/local/bin:$PATH:$HOME/.nix-profile/bin:/nix/var/nix/p
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
-eval "$(starship init zsh)"
+# eval "$(starship init zsh)"
+ZSH_THEME="robbyrussell"  # default, or try "agnoster", "af-magic", etc.
+
 eval "$(fnm env --use-on-cd)"
 
 plugins=(git zsh-autosuggestions)
