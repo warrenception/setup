@@ -4,8 +4,7 @@ export PATH=$HOME/bin:/usr/local/bin:$PATH:$HOME/.nix-profile/bin:/nix/var/nix/p
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
-# eval "$(starship init zsh)"
-ZSH_THEME="robbyrussell"  # default, or try "agnoster", "af-magic", etc.
+ZSH_THEME="robbyrussell"
 
 eval "$(fnm env --use-on-cd)"
 
@@ -98,3 +97,8 @@ extract() {
 }
 
 mkcd() { mkdir -p "$1" && cd "$1"; }
+
+# Quick utilities
+alias reload="source ~/.zshrc"
+alias ports="lsof -i -P -n | grep LISTEN"
+alias ip="curl -s ipinfo.io/ip"
