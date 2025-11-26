@@ -10,6 +10,13 @@ return {
         root_markers = { "hardhat.config.js", "hardhat.config.ts", "foundry.toml", ".git" },
       })
 
+      -- Zig LSP
+      vim.lsp.config("zls", {
+        cmd = { "zls" },
+        filetypes = { "zig", "zon" },
+        root_markers = { "build.zig", "build.zig.zon", ".git" },
+      })
+
       -- Lua LSP for nvim config editing
       vim.lsp.config("lua_ls", {
         cmd = { "lua-language-server" },
@@ -31,6 +38,7 @@ return {
       vim.lsp.enable("ts_ls")
       vim.lsp.enable("solidity_ls")
       vim.lsp.enable("lua_ls")
+      vim.lsp.enable("zls")
 
       -- Keymaps (only when LSP attaches)
       vim.api.nvim_create_autocmd("LspAttach", {
