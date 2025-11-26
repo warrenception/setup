@@ -1,0 +1,98 @@
+# If you come from bash you might have to change your $PATH
+export PATH=$HOME/bin:/usr/local/bin:$PATH:$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin/:$HOME/nvim-macos-arm64/bin
+
+# Path to your oh-my-zsh installation.
+export ZSH="$HOME/.oh-my-zsh"
+
+eval "$(starship init zsh)"
+eval "$(fnm env --use-on-cd)"
+
+plugins=(git zsh-autosuggestions)
+source $ZSH/oh-my-zsh.sh
+
+export ARCHFLAGS="-arch arm64"
+
+export PATH="$PATH:$HOME/.foundry/bin"
+
+
+# bun completions
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+
+# pnpm
+export PNPM_HOME="$HOME/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+
+alias gri='function _gri() { git rebase -i HEAD~$1; }; _gri'
+
+# Python via uv
+alias py="uv run python"
+alias pip="uv pip"
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+alias claude="$HOME/.claude/local/claude"
+
+# Editor
+alias code="nvim"
+
+# Modern CLI replacements
+alias ls="eza"
+alias ll="eza -la"
+alias la="eza -a"
+alias lt="eza --tree"
+alias cat="bat"
+alias find="fd"
+alias grep="rg"
+alias diff="delta"
+
+# Quick navigation
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+
+# Git shortcuts
+alias gs="git status"
+alias gd="git diff"
+alias gds="git diff --staged"
+alias gl="git log --oneline -20"
+alias glo="git log --oneline --graph -20"
+alias gco="git checkout"
+alias gb="git branch"
+alias gp="git pull"
+alias gcm="git commit -m"
+alias ga="git add"
+alias gaa="git add -A"
+
+# Foundry/Solidity
+alias ft="forge test"
+alias ftv="forge test -vvv"
+alias fb="forge build"
+alias fc="forge coverage"
+alias fs="forge snapshot"
+
+# Utility functions
+killport() { lsof -ti:"$1" | xargs kill -9 2>/dev/null || echo "No process on port $1"; }
+
+extract() {
+  case "$1" in
+    *.tar.bz2) tar xjf "$1" ;;
+    *.tar.gz)  tar xzf "$1" ;;
+    *.tar.xz)  tar xJf "$1" ;;
+    *.zip)     unzip "$1" ;;
+    *.gz)      gunzip "$1" ;;
+    *.bz2)     bunzip2 "$1" ;;
+    *.rar)     unrar x "$1" ;;
+    *.7z)      7z x "$1" ;;
+    *)         echo "Unknown format: $1" ;;
+  esac
+}
+
+mkcd() { mkdir -p "$1" && cd "$1"; }
