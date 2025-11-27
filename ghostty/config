@@ -1,5 +1,5 @@
 # Let Option key work as Alt for nvim
-macos-option-as-alt = true
+macos-option-as-alt = left
 
 # Cmd+p for Telescope (sends Ctrl+p)
 keybind = cmd+p=text:\x10
