@@ -13,6 +13,15 @@ return {
         layout_strategy = "horizontal",
         layout_config = { prompt_position = "top" },
         sorting_strategy = "ascending",
+        file_ignore_patterns = { "node_modules", ".git/" },
+      },
+      pickers = {
+        find_files = {
+          hidden = true,
+        },
+        live_grep = {
+          additional_args = { "--hidden" },
+        },
       },
     },
   },

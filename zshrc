@@ -39,8 +39,6 @@ alias py="uv run python"
 alias pip="uv pip"
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-alias claude="$HOME/.claude/local/claude"
-
 # Editor
 alias code="nvim"
 
@@ -97,6 +95,7 @@ extract() {
 }
 
 mkcd() { mkdir -p "$1" && cd "$1"; }
+create() { mkdir -p "$(dirname "$1")" && touch "$1"; }
 
 # Quick utilities
 alias reload="source ~/.zshrc"
