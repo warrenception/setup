@@ -13,7 +13,22 @@ return {
         layout_strategy = "horizontal",
         layout_config = { prompt_position = "top" },
         sorting_strategy = "ascending",
-        file_ignore_patterns = { "node_modules", ".git/" },
+        file_ignore_patterns = {
+          "node_modules",
+          ".git/",
+          ".next/",
+          ".nuxt/",
+          ".turbo/",
+          ".parcel-cache/",
+          "dist/",
+          "build/",
+          "coverage/",
+          "__pycache__/",
+          ".venv/",
+          "%.pyc",
+          ".cache/",
+          ".DS_Store",
+        },
       },
       pickers = {
         find_files = {
