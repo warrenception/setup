@@ -97,6 +97,13 @@ extract() {
 mkcd() { mkdir -p "$1" && cd "$1"; }
 create() { mkdir -p "$(dirname "$1")" && touch "$1"; }
 
+cpaste() {
+  local dir="$HOME/Screenshots"
+  [[ -d "$dir" ]] || mkdir -p "$dir"
+  local file="${1:-$dir/clipboard_$(date +%Y%m%d_%H%M%S).png}"
+  pngpaste "$file" && echo "$file"
+}
+
 # Quick utilities
 alias reload="source ~/.zshrc"
 alias ports="lsof -i -P -n | grep LISTEN"
