@@ -19,13 +19,13 @@ opt.incsearch = true
 
 -- Appearance
 opt.termguicolors = true
-opt.signcolumn = "no"
+opt.signcolumn = "yes"  -- Always reserve space, prevents layout shift
 opt.cursorline = true
 opt.scrolloff = 8
 
--- Diagnostics (underline only, no inline text)
+-- Diagnostics (signs + underline, no inline text)
 vim.diagnostic.config({
-  signs = false,
+  signs = true,
   virtual_text = false,
   underline = true,
 })
