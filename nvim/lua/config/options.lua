@@ -20,6 +20,7 @@ opt.incsearch = true
 -- Appearance
 opt.termguicolors = true
 opt.signcolumn = "yes"  -- Always reserve space, prevents layout shift
+opt.winborder = "rounded"  -- Rounded borders on floating windows
 opt.cursorline = true
 opt.scrolloff = 8
 
