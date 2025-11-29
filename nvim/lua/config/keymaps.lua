@@ -3,6 +3,10 @@ local map = vim.keymap.set
 -- Escape
 map("i", "jk", "<Esc>")
 
+-- Save (Cmd+s)
+map("n", "<D-s>", ":w<CR>", { silent = true })
+map("i", "<D-s>", "<Esc>:w<CR>", { silent = true })
+
 -- Split navigation (Option+hjkl)
 map("n", "<A-h>", "<C-w>h")
 map("n", "<A-j>", "<C-w>j")
@@ -34,16 +38,16 @@ map("n", "<A-r>", ":%s/<C-r><C-w>//gc<Left><Left><Left>", { desc = "Replace word
 -- Search and replace in repo (Option+Shift+r)
 -- Greps word, puts in quickfix, then prompts for replacement
 map("n", "<A-S-r>", function()
-  local word = vim.fn.expand("<cword>")
-  vim.cmd("silent grep! " .. word)
-  vim.cmd("copen")
-  vim.ui.input({ prompt = "Replace '" .. word .. "' with: " }, function(replacement)
-    if replacement then
-      vim.cmd("cclose")
-      vim.cmd("cdo s/" .. word .. "/" .. replacement .. "/g | update")
-      vim.notify("Replaced '" .. word .. "' with '" .. replacement .. "' across repo")
-    end
-  end)
+	local word = vim.fn.expand("<cword>")
+	vim.cmd("silent grep! " .. word)
+	vim.cmd("copen")
+	vim.ui.input({ prompt = "Replace '" .. word .. "' with: " }, function(replacement)
+		if replacement then
+			vim.cmd("cclose")
+			vim.cmd("cdo s/" .. word .. "/" .. replacement .. "/g | update")
+			vim.notify("Replaced '" .. word .. "' with '" .. replacement .. "' across repo")
+		end
+	end)
 end, { desc = "Replace word across repo" })
 
 -- Half-page scroll centered (Option+d/u)
@@ -55,22 +59,22 @@ vim.g.term_buf = nil
 vim.g.term_win = nil
 
 local function toggle_terminal()
-  if vim.g.term_win and vim.api.nvim_win_is_valid(vim.g.term_win) then
-    vim.api.nvim_win_hide(vim.g.term_win)
-    vim.g.term_win = nil
-  else
-    if vim.g.term_buf and vim.api.nvim_buf_is_valid(vim.g.term_buf) then
-      vim.cmd("botright split")
-      vim.cmd("resize 15")
-      vim.api.nvim_win_set_buf(0, vim.g.term_buf)
-      vim.g.term_win = vim.api.nvim_get_current_win()
-    else
-      vim.cmd("botright split | resize 15 | terminal")
-      vim.g.term_buf = vim.api.nvim_get_current_buf()
-      vim.g.term_win = vim.api.nvim_get_current_win()
-    end
-    vim.cmd("startinsert")
-  end
+	if vim.g.term_win and vim.api.nvim_win_is_valid(vim.g.term_win) then
+		vim.api.nvim_win_hide(vim.g.term_win)
+		vim.g.term_win = nil
+	else
+		if vim.g.term_buf and vim.api.nvim_buf_is_valid(vim.g.term_buf) then
+			vim.cmd("botright split")
+			vim.cmd("resize 15")
+			vim.api.nvim_win_set_buf(0, vim.g.term_buf)
+			vim.g.term_win = vim.api.nvim_get_current_win()
+		else
+			vim.cmd("botright split | resize 15 | terminal")
+			vim.g.term_buf = vim.api.nvim_get_current_buf()
+			vim.g.term_win = vim.api.nvim_get_current_win()
+		end
+		vim.cmd("startinsert")
+	end
 end
 
 map("n", "<A-n>", toggle_terminal, { silent = true })
