@@ -14,6 +14,8 @@ return {
         "yaml",
         "markdown",
         "bash",
+        "zig",
+        "toml",
       },
       highlight = { enable = true },
       indent = { enable = true },

@@ -1,3 +1,5 @@
+theme = "TokyoNight Storm"
+
 # Let Option key work as Alt for nvim
 macos-option-as-alt = left
 

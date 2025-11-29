@@ -8,10 +8,4 @@ return {
       panel = { enabled = false },
     },
   },
-  {
-    "zbirenbaum/copilot-cmp",
-    dependencies = { "zbirenbaum/copilot.lua" },
-    event = "InsertEnter",
-    config = true,
-  },
 }
