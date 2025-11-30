@@ -8,3 +8,9 @@ keybind = cmd+p=text:\x10
 
 # Cmd+g for grep (sends Ctrl+g)
 keybind = cmd+g=text:\x07
+
+# Pane navigation with cmd+shift+arrows
+keybind = cmd+shift+left=goto_split:left
+keybind = cmd+shift+right=goto_split:right
+keybind = cmd+shift+up=goto_split:top
+keybind = cmd+shift+down=goto_split:bottom
