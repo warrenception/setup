@@ -3,17 +3,12 @@ theme = "TokyoNight Storm"
 # Let Option key work as Alt for nvim
 macos-option-as-alt = left
 
-# Cmd+p for Telescope (sends Ctrl+p)
+# Telescope
 keybind = cmd+p=text:\x10
-
-# Cmd+g for grep (sends Ctrl+g)
 keybind = cmd+g=text:\x07
-
-# Cmd+Shift+p for hidden files (sends the escape sequence for <D-S-p>)
 keybind = cmd+shift+p=unbind
 
-# Pane navigation with cmd+shift+arrows
-keybind = cmd+shift+left=goto_split:left
-keybind = cmd+shift+right=goto_split:right
-keybind = cmd+shift+up=goto_split:top
-keybind = cmd+shift+down=goto_split:bottom
+# Split resizing (pass to nvim)
+keybind = cmd+shift+j=unbind
+keybind = cmd+shift+k=unbind
+keybind = cmd+shift+0=text:\x1b[61;5u

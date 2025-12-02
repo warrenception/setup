@@ -25,6 +25,25 @@ map("n", "<A-S-w>", ":bd!<CR>", { silent = true })
 map("n", "<A-->", ":vsplit<CR>", { silent = true })
 map("n", "<A-o>", ":split<CR>", { silent = true })
 
+-- Resize split width (Cmd+Shift+j/k), reset (Cmd+Shift+0)
+local function resize_width(amount)
+	if vim.fn.winnr("$") == 1 then return end
+	local win = vim.api.nvim_get_current_win()
+	local width = vim.api.nvim_win_get_width(win)
+	local new_width = width + amount
+	local max_width = math.floor(vim.o.columns * 0.9)
+	if new_width >= 10 and new_width <= max_width then
+		vim.api.nvim_win_set_width(win, new_width)
+	end
+end
+
+map("n", "<D-S-j>", function() resize_width(-5) end, { silent = true })
+map("n", "<D-S-k>", function() resize_width(5) end, { silent = true })
+map("n", "<C-=>", "<C-w>=", { silent = true })
+map("t", "<D-S-j>", function() resize_width(-5) end, { silent = true })
+map("t", "<D-S-k>", function() resize_width(5) end, { silent = true })
+map("t", "<C-=>", "<C-\\><C-n><C-w>=", { silent = true })
+
 -- Reselect after indent
 map("v", ">", ">gv")
 map("v", "<", "<gv")
