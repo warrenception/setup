@@ -21,9 +21,9 @@ map("n", "<S-Tab>", ":bprev<CR>", { silent = true })
 map("n", "<A-w>", ":close<CR>", { silent = true })
 map("n", "<A-S-w>", ":bd!<CR>", { silent = true })
 
--- Splits (Option+- horizontal, Option+o vertical)
-map("n", "<A-->", ":split<CR>", { silent = true })
-map("n", "<A-o>", ":vsplit<CR>", { silent = true })
+-- Splits (Option+- vertical, Option+o horizontal)
+map("n", "<A-->", ":vsplit<CR>", { silent = true })
+map("n", "<A-o>", ":split<CR>", { silent = true })
 
 -- Reselect after indent
 map("v", ">", ">gv")
