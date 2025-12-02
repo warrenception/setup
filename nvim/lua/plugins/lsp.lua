@@ -50,8 +50,31 @@ return {
           map("gd", vim.lsp.buf.definition, "Go to definition")
           map("gr", vim.lsp.buf.references, "Go to references")
           map("K", vim.lsp.buf.hover, "Hover docs")
-          map("<leader>rn", vim.lsp.buf.rename, "Rename")
           map("<leader>ca", vim.lsp.buf.code_action, "Code action")
+
+          -- Smart rename: LSP rename if on symbol, otherwise text substitution
+          map("<leader>rn", function()
+            local params = vim.lsp.util.make_position_params()
+            local result = vim.lsp.buf_request_sync(0, "textDocument/definition", params, 1000)
+            local has_definition = false
+            for _, res in pairs(result or {}) do
+              if res.result and #res.result > 0 then
+                has_definition = true
+                break
+              end
+            end
+            if has_definition then
+              vim.lsp.buf.rename()
+            else
+              local word = vim.fn.expand("<cword>")
+              vim.ui.input({ prompt = "Replace '" .. word .. "' with: " }, function(new_word)
+                if new_word and new_word ~= "" then
+                  vim.cmd("%s/\\<" .. vim.fn.escape(word, "/\\") .. "\\>/" .. vim.fn.escape(new_word, "/\\") .. "/g")
+                  vim.notify("Replaced '" .. word .. "' with '" .. new_word .. "'")
+                end
+              end)
+            end
+          end, "Smart rename")
           map("<leader>e", vim.diagnostic.open_float, "Show error")
           map("[d", vim.diagnostic.goto_prev, "Previous diagnostic")
           map("]d", vim.diagnostic.goto_next, "Next diagnostic")

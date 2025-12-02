@@ -50,9 +50,11 @@ map("n", "<A-S-r>", function()
 	end)
 end, { desc = "Replace word across repo" })
 
--- Half-page scroll centered (Option+d/u)
+-- Half-page scroll centered (Option+d/u) - works in normal and visual mode
 map("n", "<A-d>", "<C-d>zz")
 map("n", "<A-u>", "<C-u>zz")
+map("v", "<A-d>", "<C-d>zz")
+map("v", "<A-u>", "<C-u>zz")
 
 -- Terminal toggle (Option+n) - single persistent terminal
 vim.g.term_buf = nil
