@@ -7,6 +7,7 @@ return {
     },
     keys = {
       { "<C-p>", "<cmd>Telescope find_files<cr>", desc = "Find files" },
+      { "<D-S-p>", "<cmd>Telescope find_files hidden=true no_ignore=true<cr>", desc = "Find files (hidden)" },
       { "<C-g>", "<cmd>Telescope live_grep<cr>", desc = "Grep" },
       { "<leader>b", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
       { "<leader>r", "<cmd>Telescope oldfiles<cr>", desc = "Recent files" },
@@ -21,26 +22,16 @@ return {
         layout_config = { prompt_position = "top" },
         sorting_strategy = "ascending",
         file_ignore_patterns = {
-          "node_modules",
           ".git/",
           ".next/",
           ".nuxt/",
           ".turbo/",
           ".parcel-cache/",
-          "dist/",
-          "build/",
-          "coverage/",
-          "__pycache__/",
-          ".venv/",
-          "%.pyc",
           ".cache/",
           ".DS_Store",
         },
       },
       pickers = {
-        find_files = {
-          hidden = true,
-        },
         live_grep = {
           additional_args = { "--hidden" },
         },
