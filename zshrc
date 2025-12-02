@@ -101,7 +101,7 @@ cpaste() {
   local dir="$HOME/Screenshots"
   [[ -d "$dir" ]] || mkdir -p "$dir"
   local file="${1:-$dir/clipboard_$(date +%Y%m%d_%H%M%S).png}"
-  pngpaste "$file" && echo "$file"
+  pngpaste "$file" && echo "$file" | tee >(pbcopy)
 }
 
 # Quick utilities
