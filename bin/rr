@@ -1,0 +1,76 @@
+#!/bin/bash
+set -e
+
+# Colors
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
+
+# Check args
+if [[ -z "$1" || "$1" == "-h" || "$1" == "--help" ]]; then
+  echo "Usage: read-article <url> [--save]"
+  echo ""
+  echo "Fetch and summarize an article"
+  echo ""
+  echo "Options:"
+  echo "  --save    Save summary to ~/reads/"
+  exit 0
+fi
+
+URL="$1"
+SAVE=false
+
+for arg in "$@"; do
+  if [[ "$arg" == "--save" || "$arg" == "-s" ]]; then
+    SAVE=true
+  fi
+done
+
+echo "Fetching article..."
+
+# Fetch and convert to plain text
+content=$(curl -sL "$URL" | html2text -utf8 -width 1000 2>/dev/null | head -500)
+
+if [[ -z "$content" ]]; then
+  echo "Failed to fetch article"
+  exit 1
+fi
+
+echo "Summarizing..."
+echo ""
+
+prompt="Here's an article from $URL:
+
+$content
+
+Provide:
+1. **TL;DR** - 2-3 sentence summary
+2. **Key Points** - 3-5 bullet points
+3. **Why it matters** - 1 sentence
+
+Be concise. If it's in French, summarize in English."
+
+summary=$(echo "$prompt" | claude -p)
+
+echo "$summary" | glow -
+
+# Save if requested
+if $SAVE; then
+  mkdir -p ~/reads
+  date_str=$(date +%Y-%m-%d)
+  # Extract domain for filename
+  domain=$(echo "$URL" | sed -E 's|https?://([^/]+).*|\1|' | sed 's/www\.//')
+  filename=~/reads/${date_str}-${domain}.md
+  
+  cat > "$filename" << EOF
+# Article Summary
+
+**URL:** $URL
+**Date:** $(date +%Y-%m-%d)
+
+$summary
+EOF
+  
+  echo ""
+  echo -e "${DIM}Saved to $filename${RESET}"
+fi
