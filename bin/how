@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+# Quick command helper - asks Claude how to do something
+
+if [[ -z "$1" || "$1" == "-h" || "$1" == "--help" ]]; then
+  echo "Usage: how <question>"
+  echo ""
+  echo "Examples:"
+  echo "  how move file.txt to ~/Documents"
+  echo "  how find files larger than 100MB"
+  echo "  how compress this folder"
+  exit 0
+fi
+
+prompt="You are a terse command-line assistant. The user wants to know how to: $*
+
+Give ONLY the command(s) needed. No explanation unless critical.
+If multiple steps, number them.
+Assume macOS with modern tools (fd, rg, bat, etc).
+If the question is ambiguous, give the most common interpretation."
+
+echo "$prompt" | claude -p
