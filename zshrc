@@ -1,6 +1,9 @@
 # If you come from bash you might have to change your $PATH
 export PATH=$HOME/bin:/usr/local/bin:$PATH:$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin/:$HOME/nvim-macos-arm64/bin
 
+# Custom scripts
+export PATH="$HOME/work/setup/bin:$PATH"
+
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 

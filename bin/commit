@@ -1,0 +1,86 @@
+#!/bin/bash
+set -e
+
+# Check for any changes (staged or unstaged)
+if git diff --quiet && git diff --staged --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+  echo "No changes to commit"
+  exit 1
+fi
+
+# Stage all changes
+git add -A
+
+# Gather context
+branch=$(git branch --show-current)
+status=$(git status --short --branch)
+diff_stat=$(git diff --staged --stat)
+
+# Build prompt
+prompt="You are analyzing git changes to create a commit message.
+
+# Context
+- Current branch: $branch
+- Git status:
+$status
+- Changes:
+$diff_stat
+
+# Task
+Create a commit subject line (max 50 chars).
+
+Format: \`type(scope): description\` or \`type: description\`
+
+**Conventional types:** feat, fix, docs, style, refactor, test, chore, ci, perf, ai
+
+Type guidelines:
+- AI config (CLAUDE.md, .claude/, .gemini/) → ai
+- Test files (*.test.*, *.spec.*) → test
+- Docs (*.md, docs/) → docs
+- Config (package.json, tsconfig.json) → chore
+- Bug fixes → fix
+- New functionality → feat
+
+**Requirements:**
+- Clear and descriptive: explain WHAT changed
+- Imperative mood (\"add\" not \"added\")
+- Lowercase, no period
+- Omit scope unless it adds clarity
+
+Output ONLY the commit message, nothing else."
+
+# Generate commit message
+echo "Generating commit message..."
+msg=$(echo "$prompt" | claude -p)
+
+# Show and confirm
+echo ""
+echo "Proposed commit message:"
+echo "────────────────────────"
+echo "$msg"
+echo "────────────────────────"
+echo ""
+read -p "Commit? [Y/n/e(dit)] " choice
+
+case "$choice" in
+  n|N) 
+    git reset HEAD -- . >/dev/null 2>&1
+    echo "Aborted (changes unstaged)"
+    exit 0 
+    ;;
+  e|E) 
+    tmpfile=$(mktemp)
+    echo "$msg" > "$tmpfile"
+    ${EDITOR:-vim} "$tmpfile"
+    msg=$(cat "$tmpfile")
+    rm "$tmpfile"
+    ;;
+esac
+
+# Commit
+if git commit -m "$msg"; then
+  hash=$(git rev-parse --short HEAD)
+  echo "$hash $msg"
+else
+  echo "Commit failed"
+  exit 1
+fi
