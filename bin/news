@@ -66,26 +66,6 @@ fetch_lobsters() {
   done
 }
 
-fetch_elucid() {
-  echo -e "${BOLD}${YELLOW}Élucid${RESET}"
-  echo -e "${DIM}────────────────────────────────────────${RESET}"
-  
-  curl -s "https://elucid.media/feed" | \
-  xmllint --xpath "//item[position()<=$ELUCID_LIMIT]" - 2>/dev/null | \
-  xmllint --xpath "//item" - 2>/dev/null | \
-  while IFS= read -r line; do
-    if [[ "$line" =~ \<title\>(.*)\</title\> ]]; then
-      title="${BASH_REMATCH[1]}"
-    elif [[ "$line" =~ \<link\>(.*)\</link\> ]]; then
-      link="${BASH_REMATCH[1]}"
-    elif [[ "$line" =~ \<description\> ]]; then
-      echo -e "${CYAN}•${RESET} $title"
-      echo -e "   ${DIM}$link${RESET}"
-      echo ""
-    fi
-  done
-}
-
 fetch_elucid_simple() {
   echo -e "${BOLD}${YELLOW}Élucid${RESET}"
   echo -e "${DIM}────────────────────────────────────────${RESET}"
@@ -156,38 +136,54 @@ summarize_news() {
 $headlines
 
 Give me a brief morning briefing with these sections:
-1. Top 3-5 stories I should care about - include the URL as a markdown link for each
+1. Top 3-5 stories I should care about
 2. Any themes across sources (1-2 lines)
-3. Must-read today with link
+3. Must-read today
 
-Format links as [Title](url). Be concise and opinionated."
+Be concise and opinionated.
+
+Format each story as:
+**Title**
+One sentence summary
+URL on its own line"
 
   # Convert numbered lists to bold-prefixed paragraphs (glow collapses list spacing)
   echo "$prompt" | claude -p | sed -E 's/^([0-9]+)\. /**\1.** /' | glow -
 }
 
 # Main
-if $SUMMARIZE; then
-  summarize_news
-  exit 0
-fi
-
 case "${1:-all}" in
   hn)
+    if $SUMMARIZE; then
+      echo "Summarize not supported for single source"
+      exit 1
+    fi
     fetch_hn
     ;;
   lobsters|lb)
+    if $SUMMARIZE; then
+      echo "Summarize not supported for single source"
+      exit 1
+    fi
     fetch_lobsters
     ;;
   elucid|fr)
+    if $SUMMARIZE; then
+      echo "Summarize not supported for single source"
+      exit 1
+    fi
     fetch_elucid_simple
     ;;
   all|"")
-    fetch_hn
-    echo ""
-    fetch_lobsters
-    echo ""
-    fetch_elucid_simple
+    if $SUMMARIZE; then
+      summarize_news
+    else
+      fetch_hn
+      echo ""
+      fetch_lobsters
+      echo ""
+      fetch_elucid_simple
+    fi
     ;;
   *)
     echo "Usage: news [hn|lobsters|elucid|all] [--summarize|-s]"
