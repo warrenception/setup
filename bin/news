@@ -1,0 +1,196 @@
+#!/bin/bash
+set -e
+
+# Config
+HN_LIMIT=10
+LOBSTERS_LIMIT=10
+ELUCID_LIMIT=5
+
+# Colors
+BOLD='\033[1m'
+DIM='\033[2m'
+CYAN='\033[36m'
+YELLOW='\033[33m'
+GREEN='\033[32m'
+RESET='\033[0m'
+
+# Check for --summarize flag
+SUMMARIZE=false
+for arg in "$@"; do
+  if [[ "$arg" == "--summarize" || "$arg" == "-s" ]]; then
+    SUMMARIZE=true
+  fi
+done
+
+# Remove --summarize from args
+args=()
+for arg in "$@"; do
+  if [[ "$arg" != "--summarize" && "$arg" != "-s" ]]; then
+    args+=("$arg")
+  fi
+done
+set -- "${args[@]}"
+
+fetch_hn() {
+  echo -e "${BOLD}${YELLOW}Hacker News${RESET}"
+  echo -e "${DIM}────────────────────────────────────────${RESET}"
+  
+  # Get top story IDs, then fetch each story
+  ids=$(curl -s "https://hacker-news.firebaseio.com/v0/topstories.json" | jq -r ".[:$HN_LIMIT][]")
+  
+  i=1
+  for id in $ids; do
+    story=$(curl -s "https://hacker-news.firebaseio.com/v0/item/$id.json")
+    title=$(echo "$story" | jq -r '.title')
+    url=$(echo "$story" | jq -r '.url // "https://news.ycombinator.com/item?id=\(.id)"')
+    points=$(echo "$story" | jq -r '.score')
+    
+    echo -e "${CYAN}$i.${RESET} $title"
+    echo -e "   ${DIM}$points pts | $url${RESET}"
+    echo ""
+    ((i++))
+  done
+}
+
+fetch_lobsters() {
+  echo -e "${BOLD}${GREEN}Lobsters${RESET}"
+  echo -e "${DIM}────────────────────────────────────────${RESET}"
+  
+  curl -s "https://lobste.rs/hottest.json" | jq -r ".[:$LOBSTERS_LIMIT][] | \"\(.title)\n\(.score) pts | \(.url // .comments_url)\n\"" | \
+  while IFS= read -r title; do
+    read -r meta
+    read -r blank
+    echo -e "${CYAN}•${RESET} $title"
+    echo -e "   ${DIM}$meta${RESET}"
+    echo ""
+  done
+}
+
+fetch_elucid() {
+  echo -e "${BOLD}${YELLOW}Élucid${RESET}"
+  echo -e "${DIM}────────────────────────────────────────${RESET}"
+  
+  curl -s "https://elucid.media/feed" | \
+  xmllint --xpath "//item[position()<=$ELUCID_LIMIT]" - 2>/dev/null | \
+  xmllint --xpath "//item" - 2>/dev/null | \
+  while IFS= read -r line; do
+    if [[ "$line" =~ \<title\>(.*)\</title\> ]]; then
+      title="${BASH_REMATCH[1]}"
+    elif [[ "$line" =~ \<link\>(.*)\</link\> ]]; then
+      link="${BASH_REMATCH[1]}"
+    elif [[ "$line" =~ \<description\> ]]; then
+      echo -e "${CYAN}•${RESET} $title"
+      echo -e "   ${DIM}$link${RESET}"
+      echo ""
+    fi
+  done
+}
+
+fetch_elucid_simple() {
+  echo -e "${BOLD}${YELLOW}Élucid${RESET}"
+  echo -e "${DIM}────────────────────────────────────────${RESET}"
+  
+  curl -s "https://elucid.media/feed" | \
+  grep -E "<title>|<link>" | \
+  grep -v "<atom:link" | \
+  sed 's/<[^>]*>//g' | \
+  sed 's/^[ \t]*//' | \
+  tail -n +3 | \
+  head -n $((ELUCID_LIMIT * 2)) | \
+  while IFS= read -r title; do
+    read -r link
+    echo -e "${CYAN}•${RESET} $title"
+    echo -e "   ${DIM}$link${RESET}"
+    echo ""
+  done
+}
+
+# Raw fetch functions (return plain text for summarization)
+fetch_hn_raw() {
+  echo "=== Hacker News ==="
+  ids=$(curl -s "https://hacker-news.firebaseio.com/v0/topstories.json" | jq -r ".[:$HN_LIMIT][]")
+  
+  # Fetch all stories in parallel
+  for id in $ids; do
+    echo "https://hacker-news.firebaseio.com/v0/item/$id.json"
+  done | xargs -P 10 -I {} curl -s {} | jq -r '"- \(.title) (\(.score) pts) | \(.url // "https://news.ycombinator.com/item?id=\(.id)")"'
+}
+
+fetch_lobsters_raw() {
+  echo "=== Lobsters ==="
+  curl -s "https://lobste.rs/hottest.json" | jq -r ".[:$LOBSTERS_LIMIT][] | \"- \(.title) (\(.score) pts) | \(.url // .comments_url)\""
+}
+
+fetch_elucid_raw() {
+  echo "=== Élucid (French) ==="
+  curl -s "https://elucid.media/feed" | \
+  grep -E "<title>|<link>" | \
+  grep -v "<atom:link" | \
+  sed 's/<[^>]*>//g' | \
+  sed 's/^[ \t]*//' | \
+  tail -n +3 | \
+  head -n $((ELUCID_LIMIT * 2)) | \
+  while IFS= read -r title; do
+    read -r link
+    echo "- $title | $link"
+  done
+}
+
+summarize_news() {
+  echo "Fetching news..."
+  
+  # Collect all headlines
+  headlines=$(
+    fetch_hn_raw
+    echo ""
+    fetch_lobsters_raw
+    echo ""
+    fetch_elucid_raw
+  )
+  
+  echo "Generating summary..."
+  echo ""
+  
+  prompt="You are a tech news curator. Here are today's top stories from Hacker News, Lobsters, and Élucid (French media). Each headline includes its URL.
+
+$headlines
+
+Give me a brief morning briefing with these sections:
+1. Top 3-5 stories I should care about - include the URL as a markdown link for each
+2. Any themes across sources (1-2 lines)
+3. Must-read today with link
+
+Format links as [Title](url). Be concise and opinionated."
+
+  # Convert numbered lists to bold-prefixed paragraphs (glow collapses list spacing)
+  echo "$prompt" | claude -p | sed -E 's/^([0-9]+)\. /**\1.** /' | glow -
+}
+
+# Main
+if $SUMMARIZE; then
+  summarize_news
+  exit 0
+fi
+
+case "${1:-all}" in
+  hn)
+    fetch_hn
+    ;;
+  lobsters|lb)
+    fetch_lobsters
+    ;;
+  elucid|fr)
+    fetch_elucid_simple
+    ;;
+  all|"")
+    fetch_hn
+    echo ""
+    fetch_lobsters
+    echo ""
+    fetch_elucid_simple
+    ;;
+  *)
+    echo "Usage: news [hn|lobsters|elucid|all] [--summarize|-s]"
+    exit 1
+    ;;
+esac

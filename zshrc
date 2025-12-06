@@ -111,3 +111,6 @@ cpaste() {
 alias reload="source ~/.zshrc"
 alias ports="lsof -i -P -n | grep LISTEN"
 alias ip="curl -s ipinfo.io/ip"
+
+# opencode
+export PATH=/Users/mohzaar/.opencode/bin:$PATH
