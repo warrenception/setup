@@ -7,7 +7,8 @@ export PATH="$HOME/work/setup/bin:$PATH"
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="robbyrussell"
+# Theme
+ZSH_THEME="eastwood"
 
 eval "$(fnm env --use-on-cd)"
 
@@ -114,3 +115,6 @@ alias ip="curl -s ipinfo.io/ip"
 
 # opencode
 export PATH=/Users/mohzaar/.opencode/bin:$PATH
+
+# opencode
+export PATH=/Users/warrenception/.opencode/bin:$PATH
