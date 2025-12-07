@@ -1,22 +1,30 @@
-# Pure-style minimal prompt
+# Eastwood-style prompt
 format = """
-$directory\
-$git_branch\
-$git_status\
-$line_break\
-$character"""
+$git_status$git_branch$directory$character"""
 
 [directory]
-style = "blue"
+format = "[$path ]($style)"
+style = "cyan"
+truncation_length = 5
 
 [character]
-success_symbol = "[❯](purple)"
-error_symbol = "[❯](red)"
+success_symbol = "[\\$](bold white)"
+error_symbol = "[\\$](bold red)"
 
 [git_branch]
-format = "[$branch]($style) "
-style = "bright-black"
+format = "[\\[$branch\\]]($style)"
+style = "green"
 
 [git_status]
-format = "[$all_status$ahead_behind]($style)"
-style = "cyan"
+format = "[$all_status]($style)"
+style = "red"
+conflicted = "*"
+ahead = ""
+behind = ""
+diverged = ""
+untracked = "*"
+stashed = ""
+modified = "*"
+staged = "*"
+renamed = "*"
+deleted = "*"
