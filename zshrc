@@ -1,32 +1,13 @@
-# If you come from bash you might have to change your $PATH
+# Path
 export PATH=$HOME/bin:/usr/local/bin:$PATH:$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin/:$HOME/nvim-macos-arm64/bin
-
-# Custom scripts
 export PATH="$HOME/work/setup/bin:$PATH"
-
-# Path to your oh-my-zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
-
-# Theme
-ZSH_THEME="eastwood"
-
-eval "$(fnm env --use-on-cd)"
-
-plugins=(git zsh-autosuggestions)
-source $ZSH/oh-my-zsh.sh
-
-export ARCHFLAGS="-arch arm64"
-
 export PATH="$PATH:$HOME/.foundry/bin"
-
-
-# bun completions
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+export ARCHFLAGS="-arch arm64"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
 
 # pnpm
 export PNPM_HOME="$HOME/Library/pnpm"
@@ -34,14 +15,36 @@ case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
-# pnpm end
 
-alias gri='function _gri() { git rebase -i HEAD~$1; }; _gri'
+# opencode
+export PATH=$HOME/.opencode/bin:$PATH
 
-# Python via uv
-alias py="uv run python"
-alias pip="uv pip"
+# fnm (lazy load)
+if [[ -d "$HOME/.fnm" ]]; then
+  export PATH="$HOME/.fnm:$PATH"
+  eval "$(fnm env)"
+fi
+
+# History
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_DUPS
+
+# Completion
+autoload -Uz compinit
+compinit -C  # -C skips security check, faster
+
+# Plugins (homebrew)
+[[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# bun completions
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# Prompt (starship - must be last)
+eval "$(starship init zsh)"
 
 # Editor
 alias code="nvim"
@@ -73,6 +76,7 @@ alias gp="git push"
 alias gcm="git commit -m"
 alias ga="git add"
 alias gaa="git add -A"
+alias gri='function _gri() { git rebase -i HEAD~$1; }; _gri'
 
 # Foundry/Solidity
 alias ft="forge test"
@@ -80,6 +84,15 @@ alias ftv="forge test -vvv"
 alias fb="forge build"
 alias fc="forge coverage"
 alias fs="forge snapshot"
+
+# Python via uv
+alias py="uv run python"
+alias pip="uv pip"
+
+# Quick utilities
+alias reload="source ~/.zshrc"
+alias ports="lsof -i -P -n | grep LISTEN"
+alias ip="curl -s ipinfo.io/ip"
 
 # Utility functions
 killport() { lsof -ti:"$1" | xargs kill -9 2>/dev/null || echo "No process on port $1"; }
@@ -107,14 +120,3 @@ cpaste() {
   local file="${1:-$dir/clipboard_$(date +%Y%m%d_%H%M%S).png}"
   pngpaste "$file" && echo "$file" | tee >(pbcopy)
 }
-
-# Quick utilities
-alias reload="source ~/.zshrc"
-alias ports="lsof -i -P -n | grep LISTEN"
-alias ip="curl -s ipinfo.io/ip"
-
-# opencode
-export PATH=/Users/mohzaar/.opencode/bin:$PATH
-
-# opencode
-export PATH=/Users/warrenception/.opencode/bin:$PATH

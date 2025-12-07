@@ -1,0 +1,19 @@
+# Eastwood-style minimal prompt
+format = "$git_branch$directory$character"
+
+[character]
+success_symbol = "[\\$](green)"
+error_symbol = "[\\$](red)"
+
+[directory]
+format = "[$path]($style) "
+style = "cyan"
+truncation_length = 0
+truncate_to_repo = false
+
+[git_branch]
+format = "[$branch]($style)"
+style = "yellow"
+
+[git_status]
+disabled = true
