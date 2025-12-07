@@ -17,10 +17,8 @@ return {
       require("telescope").load_extension("fzf")
     end,
     opts = {
-      defaults = {
-        layout_strategy = "horizontal",
-        layout_config = { prompt_position = "top" },
-        sorting_strategy = "ascending",
+      defaults = require("telescope.themes").get_ivy({
+        layout_config = { height = 0.4 },
         file_ignore_patterns = {
           ".git/",
           ".next/",
@@ -30,7 +28,7 @@ return {
           ".cache/",
           ".DS_Store",
         },
-      },
+      }),
       pickers = {
         live_grep = {
           additional_args = { "--hidden" },
