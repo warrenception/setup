@@ -1,5 +1,7 @@
 theme = "nord"
 
+font-size = 16
+
 # Start fullscreen
 fullscreen = true
 
