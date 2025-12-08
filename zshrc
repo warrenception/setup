@@ -19,11 +19,8 @@ esac
 # opencode
 export PATH=$HOME/.opencode/bin:$PATH
 
-# fnm (lazy load)
-if [[ -d "$HOME/.fnm" ]]; then
-  export PATH="$HOME/.fnm:$PATH"
-  eval "$(fnm env)"
-fi
+# fnm
+eval "$(fnm env)"
 
 # History
 HISTFILE=~/.zsh_history
