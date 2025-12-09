@@ -82,4 +82,12 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Vyper files use Python syntax highlighting
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  pattern = { "*.vy", "*.vyi" },
+  callback = function()
+    vim.bo.filetype = "python"
+  end,
+})
+
 
