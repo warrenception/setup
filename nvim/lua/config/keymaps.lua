@@ -51,8 +51,20 @@ map("v", "<", "<gv")
 -- Clear search highlight
 map("n", "<Esc>", ":nohlsearch<CR>", { silent = true })
 
+-- Diagnostic navigation (Option+e / Option+Shift+e)
+map("n", "<A-e>", function() vim.diagnostic.jump({ count = 1, float = true }) end, { desc = "Next diagnostic" })
+map("n", "<A-E>", function() vim.diagnostic.setqflist() end, { desc = "All diagnostics to quickfix" })
+
 -- Search and replace in file (Option+r)
-map("n", "<A-r>", ":%s/<C-r><C-w>//gc<Left><Left><Left>", { desc = "Replace word under cursor" })
+map("n", "<A-r>", function()
+	local word = vim.fn.expand("<cword>")
+	vim.ui.input({ prompt = "Replace '" .. word .. "' with: " }, function(replacement)
+		if replacement then
+			vim.cmd("%s/" .. word .. "/" .. replacement .. "/g")
+			vim.notify("Replaced '" .. word .. "' with '" .. replacement .. "'")
+		end
+	end)
+end, { desc = "Replace word under cursor" })
 
 -- Search and replace in repo (Option+Shift+r)
 -- Greps word, puts in quickfix, then prompts for replacement

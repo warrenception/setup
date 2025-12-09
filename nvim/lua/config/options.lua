@@ -16,6 +16,7 @@ opt.ignorecase = true
 opt.smartcase = true
 opt.hlsearch = true
 opt.incsearch = true
+opt.inccommand = "split"  -- Live preview of substitutions
 
 -- Appearance
 opt.termguicolors = true
