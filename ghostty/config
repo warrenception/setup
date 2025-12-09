@@ -2,6 +2,9 @@ theme = "nord"
 
 font-size = 16
 
+# Auto-copy selection to system clipboard
+copy-on-select = clipboard
+
 # Start fullscreen
 fullscreen = true
 
