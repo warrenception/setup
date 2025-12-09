@@ -74,6 +74,7 @@ alias gcm="git commit -m"
 alias ga="git add"
 alias gaa="git add -A"
 alias gri='function _gri() { git rebase -i HEAD~$1; }; _gri'
+gc() { [[ "$2" == "-f" || "$2" == "--full" ]] && git clone "$1" || git clone --depth 1 "$1"; }
 
 # Foundry/Solidity
 alias ft="forge test"
