@@ -1,0 +1,3 @@
+#!/bin/bash
+# Open neovim keybindings cheatsheet
+open ~/work/setup/keybindings-cheatsheet.html

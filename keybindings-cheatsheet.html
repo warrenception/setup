@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Neovim Keybindings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 11px;
+      padding: 20px;
+      background: #fff;
+      color: #1a1a1a;
+    }
+    h1 {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #2d2d2d;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .section {
+      background: #f8f8f8;
+      border-radius: 6px;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+    }
+    .section h2 {
+      font-size: 12px;
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #ccc;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    tr:nth-child(even) {
+      background: #efefef;
+    }
+    td {
+      padding: 3px 6px;
+      vertical-align: top;
+    }
+    td:first-child {
+      font-family: "SF Mono", Menlo, Monaco, monospace;
+      font-weight: 600;
+      white-space: nowrap;
+      color: #0066cc;
+      width: 40%;
+    }
+    td:last-child {
+      color: #444;
+    }
+    @media print {
+      body { padding: 10px; }
+      .section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Neovim Keybindings</h1>
+  <div class="grid">
+    
+    <div class="section">
+      <h2>General</h2>
+      <table>
+        <tr><td>jk</td><td>Escape (insert)</td></tr>
+        <tr><td>cmd+s</td><td>Save</td></tr>
+        <tr><td>Esc</td><td>Clear search highlight</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Navigation</h2>
+      <table>
+        <tr><td>opt+h/j/k/l</td><td>Navigate splits</td></tr>
+        <tr><td>Tab</td><td>Next buffer</td></tr>
+        <tr><td>shift+Tab</td><td>Previous buffer</td></tr>
+        <tr><td>opt+d</td><td>Half-page down</td></tr>
+        <tr><td>opt+u</td><td>Half-page up</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Splits & Windows</h2>
+      <table>
+        <tr><td>opt+-</td><td>Vertical split</td></tr>
+        <tr><td>opt+o</td><td>Horizontal split</td></tr>
+        <tr><td>opt+w</td><td>Close split</td></tr>
+        <tr><td>opt+shift+w</td><td>Close buffer</td></tr>
+        <tr><td>cmd+shift+j/k</td><td>Resize width</td></tr>
+        <tr><td>ctrl+=</td><td>Equalize splits</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>File Browser (Oil)</h2>
+      <table>
+        <tr><td>-</td><td>Open parent directory</td></tr>
+        <tr><td>cmd+b</td><td>Toggle sidebar</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Telescope</h2>
+      <table>
+        <tr><td>ctrl+p / cmd+p</td><td>Find files</td></tr>
+        <tr><td>cmd+shift+p</td><td>Find all files</td></tr>
+        <tr><td>ctrl+g / cmd+g</td><td>Live grep</td></tr>
+        <tr><td>space+b</td><td>Buffers</td></tr>
+        <tr><td>space+r</td><td>Recent files</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>LSP</h2>
+      <table>
+        <tr><td>gd</td><td>Go to definition</td></tr>
+        <tr><td>gr</td><td>Go to references</td></tr>
+        <tr><td>K</td><td>Hover docs</td></tr>
+        <tr><td>space+ca</td><td>Code action</td></tr>
+        <tr><td>space+rn</td><td>Smart rename</td></tr>
+        <tr><td>space+e</td><td>Show error</td></tr>
+        <tr><td>[d / ]d</td><td>Prev/next diagnostic</td></tr>
+        <tr><td>opt+e</td><td>Next diagnostic</td></tr>
+        <tr><td>opt+shift+e</td><td>Diagnostics to quickfix</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Search & Replace</h2>
+      <table>
+        <tr><td>opt+r</td><td>Replace word (file)</td></tr>
+        <tr><td>opt+shift+r</td><td>Replace word (repo)</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Git</h2>
+      <table>
+        <tr><td>opt+g</td><td>LazyGit</td></tr>
+        <tr><td>opt+shift+g</td><td>File history</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Terminal</h2>
+      <table>
+        <tr><td>opt+n</td><td>Toggle terminal</td></tr>
+        <tr><td>opt+h/j/k/l</td><td>Navigate from terminal</td></tr>
+        <tr><td>jk</td><td>Exit terminal mode</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Completion</h2>
+      <table>
+        <tr><td>ctrl+space</td><td>Show completions</td></tr>
+        <tr><td>ctrl+n / ctrl+p</td><td>Next / previous</td></tr>
+        <tr><td>Tab / Enter</td><td>Accept</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Visual Mode</h2>
+      <table>
+        <tr><td>></td><td>Indent (reselects)</td></tr>
+        <tr><td><</td><td>Dedent (reselects)</td></tr>
+      </table>
+    </div>
+
+  </div>
+</body>
+</html>
