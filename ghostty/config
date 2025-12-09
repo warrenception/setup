@@ -17,3 +17,9 @@ keybind = cmd+shift+p=unbind
 keybind = cmd+shift+j=unbind
 keybind = cmd+shift+k=unbind
 keybind = cmd+shift+0=text:\x1b[61;5u
+
+# Panel/split navigation
+keybind = cmd+shift+left=goto_split:left
+keybind = cmd+shift+right=goto_split:right
+keybind = cmd+shift+up=goto_split:top
+keybind = cmd+shift+down=goto_split:bottom
