@@ -43,6 +43,9 @@ source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # Prompt (starship - must be last)
 eval "$(starship init zsh)"
 
+# Use Zoxide
+eval "$(zoxide init zsh)"
+
 # Editor
 alias code="nvim"
 
