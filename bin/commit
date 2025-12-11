@@ -1,17 +1,391 @@
 #!/bin/bash
 set -e
 
+ADVANCED=false
+if [[ "$1" == "--advanced" || "$1" == "-a" ]]; then
+  ADVANCED=true
+fi
+
 # Check for any changes (staged or unstaged)
 if git diff --quiet && git diff --staged --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
   echo "No changes to commit"
   exit 1
 fi
 
+# Gather context
+branch=$(git branch --show-current)
+
+# ==============================================================================
+# ADVANCED MODE: Group changes into multiple logical commits
+# ==============================================================================
+if $ADVANCED; then
+  # Get all changed files (staged, unstaged, and untracked)
+  changed_files=$(git diff --name-only)
+  staged_files=$(git diff --staged --name-only)
+  untracked_files=$(git ls-files --others --exclude-standard)
+  all_files=$(echo -e "$changed_files\n$staged_files\n$untracked_files" | sort -u | grep -v '^$')
+  
+  # Get the full diff for context
+  git add -A
+  full_diff=$(git diff --staged)
+  git reset HEAD -- . >/dev/null 2>&1
+  
+  # Build prompt for grouping
+  group_prompt="You are analyzing git changes to group them into logical, atomic commits.
+
+# Context
+- Current branch: $branch
+- Changed files:
+$all_files
+
+# Full diff:
+$full_diff
+
+# Task
+Group these changes into logical commits. Each group should be a cohesive unit of work.
+
+Grouping guidelines:
+- Related files that implement a single feature → one commit
+- Config changes → separate commit
+- Test files → can go with their implementation or separate
+- Documentation → separate commit
+- Unrelated bug fixes → separate commits
+- Refactoring → separate from feature work
+
+# Output format (STRICT JSON, nothing else):
+[
+  {
+    \"files\": [\"path/to/file1\", \"path/to/file2\"],
+    \"message\": \"type(scope): description\",
+    \"reason\": \"brief explanation of grouping\"
+  }
+]
+
+Use conventional commit types: feat, fix, docs, style, refactor, test, chore, ci, perf, ai
+Output ONLY valid JSON array, no markdown, no explanation."
+
+  echo "Analyzing changes for logical grouping..."
+  grouping=$(echo "$group_prompt" | claude -p)
+  
+  # Parse and display proposed groups
+  echo ""
+  echo "Proposed commit groups:"
+  echo "══════════════════════════════════════════════════════════════"
+  
+  # Extract number of groups
+  num_groups=$(echo "$grouping" | jq 'length')
+  
+  for ((i=0; i<num_groups; i++)); do
+    msg=$(echo "$grouping" | jq -r ".[$i].message")
+    reason=$(echo "$grouping" | jq -r ".[$i].reason")
+    files=$(echo "$grouping" | jq -r ".[$i].files[]")
+    
+    echo ""
+    echo "[$((i+1))] $msg"
+    echo "    Reason: $reason"
+    echo "    Files:"
+    echo "$files" | sed 's/^/      - /'
+  done
+  
+  echo ""
+  echo "══════════════════════════════════════════════════════════════"
+  echo ""
+  echo "Commands: [Y]es proceed | [n]o abort | [e]dit in editor"
+  echo "          [m]erge groups | [s]plit group | [d]rop group | [r]eorder"
+  echo ""
+  
+  while true; do
+    read -p "Action: " choice
+    
+    case "$choice" in
+      n|N)
+        echo "Aborted"
+        exit 0
+        ;;
+      
+      y|Y|"")
+        break
+        ;;
+      
+      e|E)
+        # Edit grouping in editor
+        tmpfile=$(mktemp --suffix=.json)
+        echo "$grouping" | jq '.' > "$tmpfile"
+        ${EDITOR:-vim} "$tmpfile"
+        grouping=$(cat "$tmpfile")
+        rm "$tmpfile"
+        
+        # Re-display
+        num_groups=$(echo "$grouping" | jq 'length')
+        echo ""
+        echo "Updated commit groups:"
+        echo "══════════════════════════════════════════════════════════════"
+        for ((i=0; i<num_groups; i++)); do
+          msg=$(echo "$grouping" | jq -r ".[$i].message")
+          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
+          files=$(echo "$grouping" | jq -r ".[$i].files[]")
+          echo ""
+          echo "[$((i+1))] $msg"
+          [[ -n "$reason" ]] && echo "    Reason: $reason"
+          echo "    Files:"
+          echo "$files" | sed 's/^/      - /'
+        done
+        echo ""
+        echo "══════════════════════════════════════════════════════════════"
+        ;;
+      
+      m|M)
+        # Merge groups
+        read -p "Merge which groups? (e.g., 1,3 or 1-3): " merge_input
+        
+        # Parse input - handle both "1,3" and "1-3" formats
+        if [[ "$merge_input" == *-* ]]; then
+          start=${merge_input%-*}
+          end=${merge_input#*-}
+          indices=()
+          for ((j=start; j<=end; j++)); do
+            indices+=($((j-1)))
+          done
+        else
+          IFS=',' read -ra nums <<< "$merge_input"
+          indices=()
+          for n in "${nums[@]}"; do
+            indices+=($((n-1)))
+          done
+        fi
+        
+        # Collect files and build merged group
+        merged_files="[]"
+        merged_messages=""
+        first_idx=${indices[0]}
+        
+        for idx in "${indices[@]}"; do
+          files_json=$(echo "$grouping" | jq ".[$idx].files")
+          merged_files=$(echo "$merged_files" | jq --argjson f "$files_json" '. + $f | unique')
+          msg=$(echo "$grouping" | jq -r ".[$idx].message")
+          merged_messages+="$msg | "
+        done
+        merged_messages=${merged_messages% | }
+        
+        read -p "Commit message for merged group [$merged_messages]: " new_msg
+        [[ -z "$new_msg" ]] && new_msg=$(echo "$grouping" | jq -r ".[${indices[0]}].message")
+        
+        # Build new grouping: remove merged indices, add merged group
+        new_grouping="[]"
+        for ((i=0; i<num_groups; i++)); do
+          skip=false
+          for idx in "${indices[@]}"; do
+            [[ $i -eq $idx ]] && skip=true
+          done
+          if ! $skip; then
+            new_grouping=$(echo "$new_grouping" | jq --argjson g "$(echo "$grouping" | jq ".[$i]")" '. + [$g]')
+          fi
+        done
+        
+        # Add merged group
+        merged_group=$(jq -n --argjson files "$merged_files" --arg msg "$new_msg" \
+          '{files: $files, message: $msg, reason: "Merged by user"}')
+        grouping=$(echo "$new_grouping" | jq --argjson g "$merged_group" '. + [$g]')
+        num_groups=$(echo "$grouping" | jq 'length')
+        
+        # Re-display
+        echo ""
+        echo "Updated commit groups:"
+        echo "══════════════════════════════════════════════════════════════"
+        for ((i=0; i<num_groups; i++)); do
+          msg=$(echo "$grouping" | jq -r ".[$i].message")
+          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
+          files=$(echo "$grouping" | jq -r ".[$i].files[]")
+          echo ""
+          echo "[$((i+1))] $msg"
+          [[ -n "$reason" ]] && echo "    Reason: $reason"
+          echo "    Files:"
+          echo "$files" | sed 's/^/      - /'
+        done
+        echo ""
+        echo "══════════════════════════════════════════════════════════════"
+        ;;
+      
+      s|S)
+        # Split a group
+        read -p "Split which group? " split_idx
+        split_idx=$((split_idx-1))
+        
+        files=$(echo "$grouping" | jq -r ".[$split_idx].files[]")
+        echo "Files in group:"
+        i=1
+        while IFS= read -r f; do
+          echo "  [$i] $f"
+          ((i++))
+        done <<< "$files"
+        
+        read -p "Files for first new group (e.g., 1,2): " first_files
+        read -p "Commit message for first group: " first_msg
+        read -p "Commit message for second group: " second_msg
+        
+        # Parse file indices
+        IFS=',' read -ra first_indices <<< "$first_files"
+        
+        # Build two new groups
+        files_arr=()
+        while IFS= read -r f; do
+          files_arr+=("$f")
+        done <<< "$files"
+        
+        first_group_files="[]"
+        second_group_files="[]"
+        for ((i=0; i<${#files_arr[@]}; i++)); do
+          in_first=false
+          for idx in "${first_indices[@]}"; do
+            [[ $((idx-1)) -eq $i ]] && in_first=true
+          done
+          if $in_first; then
+            first_group_files=$(echo "$first_group_files" | jq --arg f "${files_arr[$i]}" '. + [$f]')
+          else
+            second_group_files=$(echo "$second_group_files" | jq --arg f "${files_arr[$i]}" '. + [$f]')
+          fi
+        done
+        
+        # Build new grouping
+        new_grouping="[]"
+        for ((i=0; i<num_groups; i++)); do
+          if [[ $i -eq $split_idx ]]; then
+            g1=$(jq -n --argjson files "$first_group_files" --arg msg "$first_msg" \
+              '{files: $files, message: $msg, reason: "Split by user"}')
+            g2=$(jq -n --argjson files "$second_group_files" --arg msg "$second_msg" \
+              '{files: $files, message: $msg, reason: "Split by user"}')
+            new_grouping=$(echo "$new_grouping" | jq --argjson g "$g1" '. + [$g]')
+            new_grouping=$(echo "$new_grouping" | jq --argjson g "$g2" '. + [$g]')
+          else
+            new_grouping=$(echo "$new_grouping" | jq --argjson g "$(echo "$grouping" | jq ".[$i]")" '. + [$g]')
+          fi
+        done
+        grouping="$new_grouping"
+        num_groups=$(echo "$grouping" | jq 'length')
+        
+        # Re-display
+        echo ""
+        echo "Updated commit groups:"
+        echo "══════════════════════════════════════════════════════════════"
+        for ((i=0; i<num_groups; i++)); do
+          msg=$(echo "$grouping" | jq -r ".[$i].message")
+          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
+          files=$(echo "$grouping" | jq -r ".[$i].files[]")
+          echo ""
+          echo "[$((i+1))] $msg"
+          [[ -n "$reason" ]] && echo "    Reason: $reason"
+          echo "    Files:"
+          echo "$files" | sed 's/^/      - /'
+        done
+        echo ""
+        echo "══════════════════════════════════════════════════════════════"
+        ;;
+      
+      d|D)
+        # Drop a group
+        read -p "Drop which group? " drop_idx
+        drop_idx=$((drop_idx-1))
+        
+        grouping=$(echo "$grouping" | jq "del(.[$drop_idx])")
+        num_groups=$(echo "$grouping" | jq 'length')
+        
+        echo "Group dropped."
+        
+        # Re-display
+        echo ""
+        echo "Updated commit groups:"
+        echo "══════════════════════════════════════════════════════════════"
+        for ((i=0; i<num_groups; i++)); do
+          msg=$(echo "$grouping" | jq -r ".[$i].message")
+          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
+          files=$(echo "$grouping" | jq -r ".[$i].files[]")
+          echo ""
+          echo "[$((i+1))] $msg"
+          [[ -n "$reason" ]] && echo "    Reason: $reason"
+          echo "    Files:"
+          echo "$files" | sed 's/^/      - /'
+        done
+        echo ""
+        echo "══════════════════════════════════════════════════════════════"
+        ;;
+      
+      r|R)
+        # Reorder groups
+        read -p "New order (e.g., 3,1,2): " order_input
+        IFS=',' read -ra new_order <<< "$order_input"
+        
+        new_grouping="[]"
+        for idx in "${new_order[@]}"; do
+          new_grouping=$(echo "$new_grouping" | jq --argjson g "$(echo "$grouping" | jq ".[$((idx-1))]")" '. + [$g]')
+        done
+        grouping="$new_grouping"
+        
+        # Re-display
+        echo ""
+        echo "Updated commit groups:"
+        echo "══════════════════════════════════════════════════════════════"
+        for ((i=0; i<num_groups; i++)); do
+          msg=$(echo "$grouping" | jq -r ".[$i].message")
+          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
+          files=$(echo "$grouping" | jq -r ".[$i].files[]")
+          echo ""
+          echo "[$((i+1))] $msg"
+          [[ -n "$reason" ]] && echo "    Reason: $reason"
+          echo "    Files:"
+          echo "$files" | sed 's/^/      - /'
+        done
+        echo ""
+        echo "══════════════════════════════════════════════════════════════"
+        ;;
+      
+      *)
+        echo "Unknown command. Use: y/n/e/m/s/d/r"
+        ;;
+    esac
+  done
+  
+  # Execute commits
+  echo ""
+  for ((i=0; i<num_groups; i++)); do
+    msg=$(echo "$grouping" | jq -r ".[$i].message")
+    files=$(echo "$grouping" | jq -r ".[$i].files[]")
+    
+    # Stage only the files for this group
+    echo "$files" | while read -r file; do
+      if [[ -n "$file" && -e "$file" ]]; then
+        git add "$file"
+      elif [[ -n "$file" ]]; then
+        # File might be deleted
+        git add "$file" 2>/dev/null || true
+      fi
+    done
+    
+    # Commit this group
+    if git diff --staged --quiet; then
+      echo "⚠ Skipping empty commit: $msg"
+    else
+      if git commit -m "$msg"; then
+        hash=$(git rev-parse --short HEAD)
+        echo "✓ $hash $msg"
+      else
+        echo "✗ Failed: $msg"
+      fi
+    fi
+  done
+  
+  echo ""
+  echo "Done! Created $num_groups commit(s)"
+  exit 0
+fi
+
+# ==============================================================================
+# STANDARD MODE: Single commit
+# ==============================================================================
+
 # Stage all changes
 git add -A
 
 # Gather context
-branch=$(git branch --show-current)
 status=$(git status --short --branch)
 diff_stat=$(git diff --staged --stat)
 
