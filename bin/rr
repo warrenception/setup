@@ -50,7 +50,7 @@ Provide:
 
 Be concise. If it's in French, summarize in English."
 
-summary=$(opencode run --agent text "$prompt")
+summary=$(cd /tmp && opencode run --agent text "$prompt")
 
 echo "$summary" | glow -
 
