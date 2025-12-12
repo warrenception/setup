@@ -65,7 +65,28 @@ Use conventional commit types: feat, fix, docs, style, refactor, test, chore, ci
 Output ONLY valid JSON array, no markdown, no explanation."
 
   echo "Analyzing changes for logical grouping..."
-  grouping=$(echo "$group_prompt" | claude -p)
+  raw_output=$(echo "$group_prompt" | claude -p)
+  
+  # Extract JSON from response (handle markdown code blocks, preamble, etc.)
+  grouping=$(echo "$raw_output" | sed -n '/^\[/,/^\]/p' | head -1)
+  
+  # If that didn't work, try extracting from code block
+  if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
+    grouping=$(echo "$raw_output" | sed -n '/```json/,/```/p' | sed '1d;$d')
+  fi
+  
+  # Last resort: try to find JSON array anywhere in output
+  if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
+    grouping=$(echo "$raw_output" | grep -ozP '\[[\s\S]*\]' | tr -d '\0' | head -1)
+  fi
+  
+  # Validate JSON
+  if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
+    echo "Error: Failed to parse Claude's response as JSON"
+    echo "Raw output:"
+    echo "$raw_output"
+    exit 1
+  fi
   
   # Parse and display proposed groups
   echo ""

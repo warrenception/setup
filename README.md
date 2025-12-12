@@ -156,6 +156,18 @@ cp ghostty/config "$HOME/Library/Application Support/com.mitchellh.ghostty/confi
 cp ghostty/config "$HOME/.config/ghostty/config"
 ```
 
+### LazyGit (`lazygit/config.yml`)
+
+High-contrast theme for better diff visibility.
+
+```bash
+# macOS
+ln -sf /path/to/setup/lazygit/config.yml ~/Library/Application\ Support/lazygit/config.yml
+
+# Linux
+ln -sf /path/to/setup/lazygit/config.yml ~/.config/lazygit/config.yml
+```
+
 ### Neovim (`nvim/`)
 
 Full config with LSP, Treesitter, Telescope, Copilot, LazyGit. See `nvim/README.md`.

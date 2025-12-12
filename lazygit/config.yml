@@ -1,0 +1,14 @@
+gui:
+  theme:
+    activeBorderColor:
+      - green
+      - bold
+    inactiveBorderColor:
+      - white
+    # Use a subtle background instead of reverse for selection
+    selectedLineBgColor:
+      - "#3d4f5f"
+    defaultFgColor:
+      - default
+    unstagedChangesColor:
+      - "#ff6666"
