@@ -148,7 +148,7 @@ One sentence summary
 URL on its own line"
 
   # Convert numbered lists to bold-prefixed paragraphs (glow collapses list spacing)
-  (cd /tmp && opencode run "$prompt") | sed -E 's/^([0-9]+)\. /**\1.** /' | glow -
+  opencode run --agent text "$prompt" | sed -E 's/^([0-9]+)\. /**\1.** /' | glow -
 }
 
 # Main

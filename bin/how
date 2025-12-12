@@ -20,4 +20,4 @@ If multiple steps, number them.
 Assume macOS with modern tools (fd, rg, bat, etc).
 If the question is ambiguous, give the most common interpretation."
 
-(cd /tmp && opencode run "$prompt")
+opencode run --agent text "$prompt"
