@@ -65,24 +65,41 @@ Use conventional commit types: feat, fix, docs, style, refactor, test, chore, ci
 Output ONLY valid JSON array, no markdown, no explanation."
 
   echo "Analyzing changes for logical grouping..."
-  raw_output=$(echo "$group_prompt" | claude -p)
+  raw_output=$(cd /tmp && opencode run "$group_prompt")
   
   # Extract JSON from response (handle markdown code blocks, preamble, etc.)
-  grouping=$(echo "$raw_output" | sed -n '/^\[/,/^\]/p' | head -1)
+  # First try: extract from ```json ... ``` code block
+  grouping=$(echo "$raw_output" | sed -n '/^```json/,/^```$/p' | sed '1d;$d')
   
-  # If that didn't work, try extracting from code block
+  # Second try: extract from ``` ... ``` code block
   if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
-    grouping=$(echo "$raw_output" | sed -n '/```json/,/```/p' | sed '1d;$d')
+    grouping=$(echo "$raw_output" | sed -n '/^```/,/^```$/p' | sed '1d;$d')
   fi
   
-  # Last resort: try to find JSON array anywhere in output
+  # Third try: find lines starting with [ and ending with ]
   if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
-    grouping=$(echo "$raw_output" | grep -ozP '\[[\s\S]*\]' | tr -d '\0' | head -1)
+    grouping=$(echo "$raw_output" | sed -n '/^\[/,/^\]/p')
+  fi
+  
+  # Last resort: try to find JSON array anywhere in output using perl
+  if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
+    grouping=$(echo "$raw_output" | perl -0777 -ne 'print $1 if /(\[.*\])/s')
   fi
   
   # Validate JSON
   if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
-    echo "Error: Failed to parse Claude's response as JSON"
+    echo "Error: Failed to parse response as JSON"
+    echo "Raw output:"
+    echo "$raw_output"
+    exit 1
+  fi
+  
+  # Extract number of groups
+  num_groups=$(echo "$grouping" | jq 'length')
+  
+  # Check if we got any groups
+  if [[ "$num_groups" -eq 0 ]]; then
+    echo "Error: No commit groups were generated"
     echo "Raw output:"
     echo "$raw_output"
     exit 1
@@ -92,9 +109,6 @@ Output ONLY valid JSON array, no markdown, no explanation."
   echo ""
   echo "Proposed commit groups:"
   echo "══════════════════════════════════════════════════════════════"
-  
-  # Extract number of groups
-  num_groups=$(echo "$grouping" | jq 'length')
   
   for ((i=0; i<num_groups; i++)); do
     msg=$(echo "$grouping" | jq -r ".[$i].message")
@@ -445,7 +459,7 @@ Output ONLY the commit message, nothing else."
 
 # Generate commit message
 echo "Generating commit message..."
-msg=$(echo "$prompt" | claude -p)
+msg=$(cd /tmp && opencode run "$prompt")
 
 # Show and confirm
 echo ""
