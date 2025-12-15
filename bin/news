@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Free model for AI operations (via OpenCode Zen)
+AI_MODEL="${AI_MODEL:-opencode/big-pickle}"
+
 # Config
 HN_LIMIT=10
 LOBSTERS_LIMIT=10
@@ -148,7 +151,7 @@ One sentence summary
 URL on its own line"
 
   # Convert numbered lists to bold-prefixed paragraphs (glow collapses list spacing)
-  (cd /tmp && opencode run --agent text "$prompt") | sed -E 's/^([0-9]+)\. /**\1.** /' | glow -
+  (cd /tmp && opencode run --model "$AI_MODEL" --agent text "$prompt") | sed -E 's/^([0-9]+)\. /**\1.** /' | glow -
 }
 
 # Main

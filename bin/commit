@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Free model for AI operations (via OpenCode Zen)
+AI_MODEL="${AI_MODEL:-opencode/big-pickle}"
+
 ADVANCED=false
 if [[ "$1" == "--advanced" || "$1" == "-a" ]]; then
   ADVANCED=true
@@ -65,7 +68,7 @@ Use conventional commit types: feat, fix, docs, style, refactor, test, chore, ci
 Output ONLY valid JSON array, no markdown, no explanation."
 
   echo "Analyzing changes for logical grouping..."
-  raw_output=$(cd /tmp && opencode run --agent text "$group_prompt")
+  raw_output=$(cd /tmp && opencode run --model "$AI_MODEL" --agent text "$group_prompt")
   
   # Extract JSON from response (handle markdown code blocks, preamble, etc.)
   # First try: extract from ```json ... ``` code block
@@ -459,7 +462,7 @@ Output ONLY the commit message, nothing else."
 
 # Generate commit message
 echo "Generating commit message..."
-msg=$(cd /tmp && opencode run --agent text "$prompt")
+msg=$(cd /tmp && opencode run --model "$AI_MODEL" --agent text "$prompt")
 
 # Show and confirm
 echo ""

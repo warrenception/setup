@@ -1,7 +1,10 @@
 #!/bin/bash
 set -e
 
-# Quick command helper - asks Claude how to do something
+# Free model for AI operations (via OpenCode Zen)
+AI_MODEL="${AI_MODEL:-opencode/big-pickle}"
+
+# Quick command helper - asks AI how to do something
 
 if [[ -z "$1" || "$1" == "-h" || "$1" == "--help" ]]; then
   echo "Usage: how <question>"
@@ -20,4 +23,4 @@ If multiple steps, number them.
 Assume macOS with modern tools (fd, rg, bat, etc).
 If the question is ambiguous, give the most common interpretation."
 
-(cd /tmp && opencode run --agent text "$prompt")
+(cd /tmp && opencode run --model "$AI_MODEL" --agent text "$prompt")
