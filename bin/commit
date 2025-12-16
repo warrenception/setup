@@ -461,6 +461,7 @@ git add -A
 # Gather context
 status=$(git status --short --branch)
 diff_stat=$(git diff --staged --stat)
+diff_content=$(git diff --staged)
 
 # Build prompt
 prompt="You are analyzing git changes to create a commit message.
@@ -469,8 +470,11 @@ prompt="You are analyzing git changes to create a commit message.
 - Current branch: $branch
 - Git status:
 $status
-- Changes:
+- Changes summary:
 $diff_stat
+
+# Full diff:
+$diff_content
 
 # Task
 Create a commit subject line (max 50 chars).
