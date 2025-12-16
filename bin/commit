@@ -2,7 +2,7 @@
 set -e
 
 # Free model for AI operations (via OpenCode Zen)
-AI_MODEL="${AI_MODEL:-opencode/big-pickle}"
+AI_MODEL="${AI_MODEL:-opencode/gpt-5-nano}"
 
 ADVANCED=false
 if [[ "$1" == "--advanced" || "$1" == "-a" ]]; then
@@ -59,34 +59,81 @@ Grouping guidelines:
 [
   {
     \"files\": [\"path/to/file1\", \"path/to/file2\"],
-    \"message\": \"type(scope): description\",
-    \"reason\": \"brief explanation of grouping\"
+    \"message\": \"type(scope): description (max 50 chars)\"
   }
 ]
 
 Use conventional commit types: feat, fix, docs, style, refactor, test, chore, ci, perf, ai
-Output ONLY valid JSON array, no markdown, no explanation."
+Keep messages SHORT (under 50 chars). Output ONLY valid JSON array, no markdown, no explanation."
 
   echo "Analyzing changes for logical grouping..."
   raw_output=$(cd /tmp && opencode run --model "$AI_MODEL" --agent text "$group_prompt")
   
   # Extract JSON from response (handle markdown code blocks, preamble, etc.)
-  # First try: extract from ```json ... ``` code block
-  grouping=$(echo "$raw_output" | sed -n '/^```json/,/^```$/p' | sed '1d;$d')
+  # First try: parse raw output directly (it might already be valid JSON)
+  if echo "$raw_output" | jq '.' >/dev/null 2>&1; then
+    grouping="$raw_output"
+  fi
   
-  # Second try: extract from ``` ... ``` code block
+  # Second try: trim whitespace and try again
+  if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
+    trimmed=$(echo "$raw_output" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    if echo "$trimmed" | jq '.' >/dev/null 2>&1; then
+      grouping="$trimmed"
+    fi
+  fi
+  
+  # Third try: extract from ```json ... ``` code block
+  if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
+    grouping=$(echo "$raw_output" | sed -n '/^```json/,/^```$/p' | sed '1d;$d')
+  fi
+  
+  # Fourth try: extract from ``` ... ``` code block
   if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
     grouping=$(echo "$raw_output" | sed -n '/^```/,/^```$/p' | sed '1d;$d')
   fi
   
-  # Third try: find lines starting with [ and ending with ]
+  # Fifth try: find lines starting with [ (with optional whitespace)
   if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
-    grouping=$(echo "$raw_output" | sed -n '/^\[/,/^\]/p')
+    grouping=$(echo "$raw_output" | sed -n '/^[[:space:]]*\[/,/^[[:space:]]*\]/p')
   fi
   
-  # Last resort: try to find JSON array anywhere in output using perl
+  # Last resort: try to find JSON array anywhere in output using perl (multiline, greedy)
   if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
-    grouping=$(echo "$raw_output" | perl -0777 -ne 'print $1 if /(\[.*\])/s')
+    grouping=$(echo "$raw_output" | perl -0777 -ne 'print $1 if /(\[[\s\S]*\])/m')
+  fi
+  
+  # Try to repair truncated JSON (missing closing brackets)
+  if ! echo "$grouping" | jq '.' >/dev/null 2>&1; then
+    # Check if it looks like truncated JSON array
+    if echo "$raw_output" | grep -q '^\[' || echo "$raw_output" | grep -q '^[[:space:]]*\['; then
+      repaired="$raw_output"
+      # Count unclosed braces/brackets and try common repair patterns
+      for suffix in \
+        ']' \
+        '}]' \
+        '"}]' \
+        '"}
+  }
+]' \
+        '"
+    }
+  }
+]' \
+        '
+  }
+]' \
+        '
+    }
+  }
+]'; do
+        if echo "${repaired}${suffix}" | jq '.' >/dev/null 2>&1; then
+          grouping="${repaired}${suffix}"
+          echo "⚠ Warning: AI response was truncated, auto-repaired JSON"
+          break
+        fi
+      done
+    fi
   fi
   
   # Validate JSON
@@ -115,12 +162,10 @@ Output ONLY valid JSON array, no markdown, no explanation."
   
   for ((i=0; i<num_groups; i++)); do
     msg=$(echo "$grouping" | jq -r ".[$i].message")
-    reason=$(echo "$grouping" | jq -r ".[$i].reason")
     files=$(echo "$grouping" | jq -r ".[$i].files[]")
     
     echo ""
     echo "[$((i+1))] $msg"
-    echo "    Reason: $reason"
     echo "    Files:"
     echo "$files" | sed 's/^/      - /'
   done
@@ -160,11 +205,9 @@ Output ONLY valid JSON array, no markdown, no explanation."
         echo "══════════════════════════════════════════════════════════════"
         for ((i=0; i<num_groups; i++)); do
           msg=$(echo "$grouping" | jq -r ".[$i].message")
-          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
           files=$(echo "$grouping" | jq -r ".[$i].files[]")
           echo ""
           echo "[$((i+1))] $msg"
-          [[ -n "$reason" ]] && echo "    Reason: $reason"
           echo "    Files:"
           echo "$files" | sed 's/^/      - /'
         done
@@ -232,11 +275,9 @@ Output ONLY valid JSON array, no markdown, no explanation."
         echo "══════════════════════════════════════════════════════════════"
         for ((i=0; i<num_groups; i++)); do
           msg=$(echo "$grouping" | jq -r ".[$i].message")
-          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
           files=$(echo "$grouping" | jq -r ".[$i].files[]")
           echo ""
           echo "[$((i+1))] $msg"
-          [[ -n "$reason" ]] && echo "    Reason: $reason"
           echo "    Files:"
           echo "$files" | sed 's/^/      - /'
         done
@@ -307,11 +348,9 @@ Output ONLY valid JSON array, no markdown, no explanation."
         echo "══════════════════════════════════════════════════════════════"
         for ((i=0; i<num_groups; i++)); do
           msg=$(echo "$grouping" | jq -r ".[$i].message")
-          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
           files=$(echo "$grouping" | jq -r ".[$i].files[]")
           echo ""
           echo "[$((i+1))] $msg"
-          [[ -n "$reason" ]] && echo "    Reason: $reason"
           echo "    Files:"
           echo "$files" | sed 's/^/      - /'
         done
@@ -335,11 +374,9 @@ Output ONLY valid JSON array, no markdown, no explanation."
         echo "══════════════════════════════════════════════════════════════"
         for ((i=0; i<num_groups; i++)); do
           msg=$(echo "$grouping" | jq -r ".[$i].message")
-          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
           files=$(echo "$grouping" | jq -r ".[$i].files[]")
           echo ""
           echo "[$((i+1))] $msg"
-          [[ -n "$reason" ]] && echo "    Reason: $reason"
           echo "    Files:"
           echo "$files" | sed 's/^/      - /'
         done
@@ -364,11 +401,9 @@ Output ONLY valid JSON array, no markdown, no explanation."
         echo "══════════════════════════════════════════════════════════════"
         for ((i=0; i<num_groups; i++)); do
           msg=$(echo "$grouping" | jq -r ".[$i].message")
-          reason=$(echo "$grouping" | jq -r ".[$i].reason // \"\"")
           files=$(echo "$grouping" | jq -r ".[$i].files[]")
           echo ""
           echo "[$((i+1))] $msg"
-          [[ -n "$reason" ]] && echo "    Reason: $reason"
           echo "    Files:"
           echo "$files" | sed 's/^/      - /'
         done
