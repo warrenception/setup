@@ -2,11 +2,14 @@ theme = "nord"
 
 font-size = 16
 
+# Known issue
+window-padding-color = background
+
 # Auto-copy selection to system clipboard
 copy-on-select = clipboard
 
-# Start fullscreen
-fullscreen = true
+# Start maximized (not fullscreen - avoids rendering bug)
+maximize = true
 
 # Let Option key work as Alt for nvim
 macos-option-as-alt = left
