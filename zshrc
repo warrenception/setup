@@ -90,6 +90,9 @@ alias fs="forge snapshot"
 alias py="uv run python"
 alias pip="uv pip"
 
+# Olympix
+alias ox="~/olympix"
+
 # Quick utilities
 alias reload="source ~/.zshrc"
 alias ports="lsof -i -P -n | grep LISTEN"

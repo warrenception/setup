@@ -1,4 +1,6 @@
 # Eastwood-style prompt
+command_timeout = 1000  # milliseconds (default is 500)
+
 format = """
 $git_status$git_branch$directory$character"""
 
